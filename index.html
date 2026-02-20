@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoopeExpress · Comprobante de Ahorro Plazo Fijo</title>
+
+  <!-- jsPDF + html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --verde:    #8cc63f;
+      --verde-d:  #6aa32a;
+      --gris-osc: #3d4245;
+      --gris-med: #6b7280;
+      --gris-cla: #f3f4f5;
+      --blanco:   #ffffff;
+      --borde:    #d1d5db;
+      --sombra:   0 4px 24px rgba(0,0,0,.10);
+      --radio:    8px;
+      --font-d:   'Barlow Condensed', sans-serif;
+      --font-b:   'Barlow', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-b);
+      background: #eef0f2;
+      color: var(--gris-osc);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ══ TOPBAR ══ */
+    .topbar {
+      background: var(--gris-osc);
+      color: var(--blanco);
+      padding: .75rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+    .topbar-brand { display:flex; align-items:center; gap:.6rem; }
+    .topbar-logo  {
+      font-family: var(--font-d);
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -.01em;
+    }
+    .topbar-logo .coop { color: var(--blanco); }
+    .topbar-logo .expr { color: var(--verde); }
+    .topbar-tagline {
+      font-size: .65rem;
+      font-style: italic;
+      color: rgba(255,255,255,.5);
+    }
+    .topbar-badge {
+      background: var(--verde);
+      color: var(--blanco);
+      font-family: var(--font-d);
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: .2rem .7rem;
+      border-radius: 99px;
+    }
+
+    /* ══ LAYOUT ══ */
+    .main-wrap {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 1.5rem;
+      max-width: 1180px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+      flex: 1;
+    }
+    @media (max-width: 880px) { .main-wrap { grid-template-columns: 1fr; } }
+
+    /* ══ CARD ══ */
+    .card {
+      background: var(--blanco);
+      border-radius: 12px;
+      box-shadow: var(--sombra);
+      overflow: hidden;
+    }
+
+    /* ══ FORM PANEL ══ */
+    .form-header {
+      background: var(--verde);
+      padding: .9rem 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+    }
+    .form-header-title {
+      font-family: var(--font-d);
+      font-size: .95rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--blanco);
+    }
+    .form-body { padding: 1.35rem; }
+
+    .section-lbl {
+      font-family: var(--font-d);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--verde-d);
+      margin-bottom: .7rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .section-lbl::after { content:''; flex:1; height:1.5px; background:var(--borde); }
+
+    .field-group { display:flex; flex-direction:column; gap:.28rem; margin-bottom:.65rem; }
+    .field-label {
+      font-size: .7rem;
+      font-weight: 600;
+      color: var(--gris-med);
+      letter-spacing: .03em;
+    }
+    .field-label .req { color:#e53e3e; margin-left:2px; }
+
+    .field-input {
+      width: 100%;
+      padding: .48rem .7rem;
+      border: 1.5px solid var(--borde);
+      border-radius: var(--radio);
+      font-family: var(--font-b);
+      font-size: .85rem;
+      color: var(--gris-osc);
+      background: #fafafa;
+      outline: none;
+      transition: border-color .16s, box-shadow .16s;
+    }
+    .field-input:focus { border-color:var(--verde); box-shadow:0 0 0 3px rgba(140,198,63,.14); background:#fff; }
+    .field-input::placeholder { color:#b0b8c1; }
+    .field-input.is-valid   { border-color:var(--verde); }
+    .field-input.is-invalid { border-color:#e53e3e; background:#fff5f5; }
+    .field-input[readonly]  { background:#f0f0f0; cursor:not-allowed; color:var(--gris-med); }
+
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:.65rem; }
+
+    .divider { height:1px; background:var(--borde); margin:.9rem 0; }
+
+    /* Resumen */
+    .calc-box {
+      background: var(--gris-cla);
+      border: 1.5px solid var(--borde);
+      border-radius: var(--radio);
+      padding: .75rem 1rem;
+      margin-top: .25rem;
+    }
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .25rem 0;
+      font-size: .82rem;
+    }
+    .calc-row .cl { color: var(--gris-med); }
+    .calc-row .cv { font-weight:700; font-family:var(--font-d); font-size:.95rem; color:var(--gris-osc); }
+    .calc-row.total { border-top:1.5px solid var(--borde); margin-top:.25rem; padding-top:.5rem; }
+    .calc-row.total .cv { font-size:1.1rem; color:var(--verde-d); }
+
+    /* Botones */
+    .action-row { display:grid; grid-template-columns:1fr 1fr; gap:.65rem; margin-top:1.1rem; }
+    .btn {
+      padding: .6rem .9rem;
+      border-radius: var(--radio);
+      font-family: var(--font-d);
+      font-weight: 700;
+      font-size: .82rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem;
+      transition: all .16s;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--borde);
+      color: var(--gris-med);
+    }
+    .btn-outline:hover { border-color:var(--verde); color:var(--verde-d); }
+    .btn-primary {
+      background: var(--verde);
+      color: var(--blanco);
+      box-shadow: 0 3px 10px rgba(140,198,63,.35);
+    }
+    .btn-primary:hover { background:var(--verde-d); transform:translateY(-1px); box-shadow:0 5px 16px rgba(106,163,42,.4); }
+    .btn-primary:active { transform:translateY(0); }
+
+    /* ══ PREVIEW ══ */
+    .preview-panel { position:sticky; top:1.5rem; align-self:start; }
+    .preview-header {
+      background: var(--gris-cla);
+      border-bottom: 1px solid var(--borde);
+      padding: .65rem 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .preview-title {
+      font-size: .68rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--gris-med);
+    }
+    .live-dot {
+      width:7px; height:7px;
+      border-radius:50%;
+      background:var(--verde);
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+    .preview-body {
+      padding: 1.2rem;
+      background: repeating-conic-gradient(#e4e6e9 0% 25%, transparent 0% 50%) 0 0 / 14px 14px;
+      min-height: 280px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    /* ══ COMPROBANTE DOCUMENT ══ */
+    #comprobante {
+      width: 100%;
+      max-width: 540px;
+      background: var(--blanco);
+      border: 1.5px solid #c4c9d0;
+      border-radius: 9px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,.14);
+      font-family: var(--font-b);
+      opacity: 0;
+      transform: scale(.97) translateY(8px);
+      transition: opacity .35s ease, transform .35s ease;
+    }
+    #comprobante.visible { opacity:1; transform:scale(1) translateY(0); }
+
+    /* Cabecera comprobante */
+    .c-top {
+      padding: 1rem 1.4rem .7rem;
+      text-align: center;
+      border-bottom: 3px solid var(--verde);
+    }
+    .c-logo {
+      font-family: var(--font-d);
+      font-size: 1.9rem;
+      font-weight: 800;
+      letter-spacing: -.01em;
+      line-height: 1;
+      margin-bottom: .12rem;
+    }
+    .c-logo .coop { color:var(--gris-osc); }
+    .c-logo .expr { color:var(--verde); }
+    .c-slogan { font-size:.6rem; font-style:italic; color:var(--gris-med); margin-bottom:.5rem; }
+    .c-mision {
+      font-size: .57rem;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--gris-med);
+      line-height: 1.55;
+    }
+
+    /* Banda */
+    .c-banda {
+      background: var(--verde);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+    }
+    .c-banda-num {
+      padding: .55rem .9rem;
+      border-right: 2px solid rgba(255,255,255,.3);
+    }
+    .c-banda-num .bl { font-size:.53rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.78); }
+    .c-banda-num .bv { font-family:var(--font-d); font-size:.9rem; font-weight:700; color:var(--blanco); min-height:1.1em; }
+    .c-banda-tit { padding:.55rem .9rem; text-align:center; }
+    .c-banda-tit .bl { font-size:.55rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.8); }
+    .c-banda-tit .bv { font-family:var(--font-d); font-size:1.3rem; font-weight:800; letter-spacing:.02em; color:var(--blanco); line-height:1; }
+
+    /* Cuerpo */
+    .c-body { padding: .8rem 1.1rem; }
+
+    .c-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:.5rem .9rem; margin-bottom:.65rem; }
+    .c-field { display:flex; flex-direction:column; gap:.08rem; }
+    .c-field .fl { font-size:.53rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--gris-med); }
+    .c-field .fv { font-size:.74rem; font-weight:600; color:var(--gris-osc); min-height:1em; border-bottom:1px solid #dde1e5; padding-bottom:.08rem; }
+    .c-field.span2 { grid-column:1/-1; }
+
+    .c-socio {
+      background: var(--gris-cla);
+      border: 1px solid var(--borde);
+      border-radius: 6px;
+      padding: .5rem .8rem;
+      margin-bottom: .65rem;
+    }
+    .c-socio .sl { font-size:.53rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--gris-med); margin-bottom:.28rem; }
+    .c-socio .sv { font-size:.78rem; font-weight:600; color:var(--gris-osc); min-height:1em; }
+
+    .c-sec-title {
+      background: var(--gris-cla);
+      border:1px solid var(--borde);
+      border-radius:5px;
+      padding: .3rem .7rem;
+      font-size: .6rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--gris-med);
+      text-align: center;
+      margin-bottom: .6rem;
+    }
+
+    .c-det-grid { display:grid; grid-template-columns:1fr 1fr; gap:.45rem .9rem; margin-bottom:.65rem; }
+    .c-det-item .dl { font-size:.55rem; color:var(--gris-med); font-weight:500; }
+    .c-det-item .dv { font-size:.78rem; font-weight:700; color:var(--gris-osc); font-family:var(--font-d); min-height:1em; }
+    .c-det-item .dv.accent { color:var(--verde-d); }
+
+    .c-frase {
+      text-align:center;
+      padding:.65rem .4rem;
+      border-top:1px solid var(--borde);
+      border-bottom:1px solid var(--borde);
+      margin:.5rem 0;
+    }
+    .c-frase-txt {
+      font-family: var(--font-d);
+      font-size: 1.1rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--gris-osc);
+      line-height: 1.2;
+    }
+
+    .c-foot { padding:.55rem 1.1rem; text-align:center; }
+    .c-foot-txt { font-size:.57rem; color:var(--gris-med); margin-bottom:.35rem; }
+    .c-foot-logo { font-family:var(--font-d); font-size:.95rem; font-weight:800; }
+    .c-foot-logo .coop { color:var(--gris-osc); }
+    .c-foot-logo .expr { color:var(--verde); }
+    .c-foot-contact { font-size:.57rem; color:var(--gris-med); margin-top:.3rem; line-height:1.55; }
+
+    .c-firmas { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; padding:.45rem 1.1rem .7rem; }
+    .c-firma { text-align:center; }
+    .c-firma-linea { height:1px; background:var(--gris-med); margin-bottom:.2rem; }
+    .c-firma-lbl { font-size:.55rem; color:var(--gris-med); font-weight:600; letter-spacing:.04em; }
+
+    .c-legal {
+      background:var(--gris-cla);
+      border-top:1px solid var(--borde);
+      padding: .45rem 1.1rem;
+      font-size: .52rem;
+      color: var(--gris-med);
+      text-align: center;
+      line-height: 1.55;
+    }
+
+    /* Placeholder */
+    .ph { width:100%; padding:3rem 1.5rem; text-align:center; color:var(--gris-med); }
+    .ph-icon { font-size:3rem; opacity:.22; margin-bottom:.9rem; }
+    .ph-txt { font-size:.82rem; line-height:1.7; }
+
+    /* ══ TOASTS ══ */
+    #toastContainer {
+      position:fixed; bottom:1.4rem; right:1.4rem; z-index:1000;
+      display:flex; flex-direction:column; gap:.4rem; pointer-events:none;
+    }
+    .toast {
+      pointer-events:all;
+      display:flex; align-items:flex-start; gap:.6rem;
+      padding:.65rem .9rem;
+      background:var(--gris-osc);
+      border-radius:9px;
+      box-shadow:0 4px 18px rgba(0,0,0,.22);
+      min-width:210px; max-width:310px;
+      animation: tIn .28s cubic-bezier(.34,1.56,.64,1);
+    }
+    .toast.removing { animation:tOut .22s ease forwards; }
+    @keyframes tIn  { from{opacity:0;transform:translateX(28px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes tOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(28px)} }
+    .toast.success { border-left:3px solid var(--verde); }
+    .toast.error   { border-left:3px solid #e53e3e; }
+    .toast.warning { border-left:3px solid #f59e0b; }
+    .toast.info    { border-left:3px solid #60a5fa; }
+    .t-icon { font-size:.9rem; flex-shrink:0; }
+    .t-title { font-size:.78rem; font-weight:600; color:#fff; }
+    .t-msg   { font-size:.7rem; color:rgba(255,255,255,.6); margin-top:.1rem; }
+    .t-close { background:none; border:none; color:rgba(255,255,255,.4); cursor:pointer; font-size:1rem; line-height:1; flex-shrink:0; margin-left:auto; padding:0; }
+    .t-close:hover { color:#fff; }
+
+    /* ══ OVERLAY ══ */
+    #processingOverlay {
+      position:fixed; inset:0; z-index:500;
+      background:rgba(0,0,0,.55);
+      backdrop-filter:blur(5px);
+      display:none;
+      align-items:center; justify-content:center;
+    }
+    #processingOverlay.active { display:flex; }
+    .proc-card {
+      background:var(--blanco); border-radius:13px;
+      padding:2rem 2.4rem; text-align:center;
+      box-shadow:0 12px 44px rgba(0,0,0,.22); min-width:250px;
+    }
+    .proc-spinner {
+      width:44px; height:44px;
+      border:3px solid var(--borde);
+      border-top-color:var(--verde);
+      border-radius:50%;
+      animation:spin .72s linear infinite;
+      margin:0 auto .9rem;
+    }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .proc-title { font-family:var(--font-d); font-size:.95rem; font-weight:700; margin-bottom:.25rem; }
+    #procStatus { font-size:.74rem; color:var(--gris-med); margin-bottom:.8rem; }
+    .proc-bar { height:5px; background:var(--borde); border-radius:99px; overflow:hidden; }
+    #procBarFill { height:100%; width:0%; background:linear-gradient(90deg,var(--verde-d),var(--verde)); border-radius:99px; transition:width .3s ease; }
+
+    @media (max-width:600px) {
+      .action-row { grid-template-columns:1fr; }
+      .topbar { padding:.65rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo"><span class="coop">COOP</span><span class="expr">EXPRESS</span></div>
+      <div class="topbar-tagline">¡Cambiando vidas, un paso a la vez!</div>
+    </div>
+    <div class="topbar-badge">Comprobante Plazo Fijo</div>
+  </header>
+
+  <!-- MAIN -->
+  <div class="main-wrap">
+
+    <!-- FORMULARIO -->
+    <section class="card">
+      <div class="form-header">
+        <span style="font-size:1.1rem">📋</span>
+        <span class="form-header-title">Datos del Comprobante</span>
+      </div>
+      <div class="form-body">
+        <form id="comprobanteForm" novalidate>
+
+          <!-- Comprobante -->
+          <div class="section-lbl">🔢 Identificación</div>
+          <div class="grid2">
+            <div class="field-group">
+              <label class="field-label" for="noComprobante">No. de Comprobante <span class="req">*</span></label>
+              <input class="field-input" type="text" id="noComprobante" placeholder="CPF-2025-001" maxlength="30" />
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="fechaHora">Fecha y Hora <span class="req">*</span></label>
+              <input class="field-input" type="datetime-local" id="fechaHora" />
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="agencia">Agencia <span class="req">*</span></label>
+              <input class="field-input" type="text" id="agencia" placeholder="Agencia Central" maxlength="50" />
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="asesor">Asesor <span class="req">*</span></label>
+              <input class="field-input" type="text" id="asesor" placeholder="Nombre del asesor" maxlength="60" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Socio -->
+          <div class="section-lbl">👤 Información del Socio</div>
+          <div class="field-group">
+            <label class="field-label" for="infoSocio">Nombre del Socio <span class="req">*</span></label>
+            <input class="field-input" type="text" id="infoSocio" placeholder="Nombre completo del socio" maxlength="80" />
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Detalle ahorro -->
+          <div class="section-lbl">💰 Détalle del Ahorro</div>
+          <div class="grid2">
+            <div class="field-group">
+              <label class="field-label" for="montoAhorro">Monto del Ahorro (Q) <span class="req">*</span></label>
+              <input class="field-input" type="number" id="montoAhorro" placeholder="0.00" min="0" step="0.01" />
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="plazoDias">Plazo Contratado (días) <span class="req">*</span></label>
+              <input class="field-input" type="number" id="plazoDias" placeholder="Ej: 360" min="1" step="1" />
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="tasaPreferencia">Tasa Preferencia (% anual) <span class="req">*</span></label>
+              <input class="field-input" type="number" id="tasaPreferencia" placeholder="Ej: 7.5" min="0" step="0.01" />
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="fechaVencimiento">Fecha de Vencimiento</label>
+              <input class="field-input" type="date" id="fechaVencimiento" readonly />
+            </div>
+          </div>
+
+          <!-- Resumen calculado -->
+          <div class="calc-box">
+            <div class="calc-row">
+              <span class="cl">Interés proyectado</span>
+              <span class="cv" id="calcInteres">Q 0.00</span>
+            </div>
+            <div class="calc-row total">
+              <span class="cl">Total a recibir</span>
+              <span class="cv" id="calcTotal">Q 0.00</span>
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="action-row">
+            <button type="button" class="btn btn-outline" id="btnLimpiar">🗑️ Limpiar</button>
+            <button type="button" class="btn btn-primary" id="btnGenerar">⬇️ Generar PDF</button>
+          </div>
+
+        </form>
+      </div>
+    </section>
+
+    <!-- PREVIEW -->
+    <aside class="preview-panel">
+      <div class="card">
+        <div class="preview-header">
+          <span class="preview-title">Vista previa en vivo</span>
+          <div style="display:flex;align-items:center;gap:.35rem">
+            <div class="live-dot"></div>
+            <span style="font-size:.62rem;color:#6b7280;font-weight:600;letter-spacing:.06em;text-transform:uppercase">Auto</span>
+          </div>
+        </div>
+        <div class="preview-body">
+          <!-- Placeholder -->
+          <div class="ph" id="ph">
+            <div class="ph-icon">📄</div>
+            <p class="ph-txt">Complete el formulario para ver<br />la vista previa del comprobante</p>
+          </div>
+
+          <!-- Comprobante renderizado -->
+          <div id="comprobante">
+            <!-- Encabezado -->
+            <div class="c-top">
+              <div class="c-logo"><span class="coop">COOP</span><span class="expr">EXPRESS</span></div>
+              <div class="c-slogan">¡Cambiando vidas, un paso a la vez!</div>
+              <div class="c-mision">Guatemaltecos ayudando a guatemaltecos<br />que ahorran y sueñan con propósito</div>
+            </div>
+
+            <!-- Banda verde -->
+            <div class="c-banda">
+              <div class="c-banda-num">
+                <div class="bl">No. de comprobante</div>
+                <div class="bv" id="pv-noComp">—</div>
+              </div>
+              <div class="c-banda-tit">
+                <div class="bl">Comprobante de Ahorro</div>
+                <div class="bv">PLAZO FIJO</div>
+              </div>
+            </div>
+
+            <!-- Cuerpo -->
+            <div class="c-body">
+              <div class="c-info-grid">
+                <div class="c-field">
+                  <span class="fl">No. de comprobante</span>
+                  <span class="fv" id="pv-noComp2">—</span>
+                </div>
+                <div class="c-field">
+                  <span class="fl">Fecha y hora</span>
+                  <span class="fv" id="pv-fecha">—</span>
+                </div>
+                <div class="c-field">
+                  <span class="fl">Agencia</span>
+                  <span class="fv" id="pv-agencia">—</span>
+                </div>
+                <div class="c-field">
+                  <span class="fl">Asesor</span>
+                  <span class="fv" id="pv-asesor">—</span>
+                </div>
+              </div>
+
+              <!-- Socio -->
+              <div class="c-socio">
+                <div class="sl">Información del Socio</div>
+                <div class="sv" id="pv-socio">—</div>
+              </div>
+
+              <!-- Detalle -->
+              <div class="c-sec-title">Détalle del Ahorro</div>
+              <div class="c-det-grid">
+                <div class="c-det-item">
+                  <div class="dl">Monto del ahorro</div>
+                  <div class="dv accent" id="pv-monto">Q —</div>
+                </div>
+                <div class="c-det-item">
+                  <div class="dl">Plazo contratado</div>
+                  <div class="dv" id="pv-plazo">—</div>
+                </div>
+                <div class="c-det-item">
+                  <div class="dl">Tasa Preferencia</div>
+                  <div class="dv" id="pv-tasa">—</div>
+                </div>
+                <div class="c-det-item">
+                  <div class="dl">Fecha de vencimiento</div>
+                  <div class="dv" id="pv-venc">—</div>
+                </div>
+                <div class="c-det-item">
+                  <div class="dl">Interés proyectado</div>
+                  <div class="dv accent" id="pv-interes">Q —</div>
+                </div>
+                <div class="c-det-item">
+                  <div class="dl">Total a recibir</div>
+                  <div class="dv accent" id="pv-total">Q —</div>
+                </div>
+              </div>
+
+              <!-- Frase motivacional -->
+              <div class="c-frase">
+                <div class="c-frase-txt">Su dinero hoy está<br />trabajando para su futuro</div>
+              </div>
+
+              <!-- Pie -->
+              <div class="c-foot">
+                <div class="c-foot-txt">Este comprobante respalda la apertura de su ahorro a plazo fijo con</div>
+                <div class="c-foot-logo"><span class="coop">COOP</span><span class="expr">EXPRESS</span></div>
+                <div class="c-foot-contact">Para cualquier consulta puede visitar nuestras agencias<br />o escribirnos a nuestro WhatsApp oficial</div>
+              </div>
+            </div>
+
+            <!-- Firmas -->
+            <div class="c-firmas">
+              <div class="c-firma">
+                <div class="c-firma-linea"></div>
+                <div class="c-firma-lbl">Firma del asesor</div>
+              </div>
+              <div class="c-firma">
+                <div class="c-firma-linea"></div>
+                <div class="c-firma-lbl">Firma del socio</div>
+              </div>
+            </div>
+
+            <!-- Legal -->
+            <div class="c-legal">
+              Este comprobante respalda la apertura de su ahorro a plazo fijo con CoopeExpress.
+              Para cualquier consulta puede visitar nuestras agencias o escribirnos a nuestro WhatsApp oficial.
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- TOASTS -->
+  <div id="toastContainer" role="status" aria-live="polite"></div>
+
+  <!-- OVERLAY -->
+  <div id="processingOverlay">
+    <div class="proc-card">
+      <div class="proc-spinner"></div>
+      <div class="proc-title">Generando PDF</div>
+      <div id="procStatus">Preparando...</div>
+      <div class="proc-bar"><div id="procBarFill"></div></div>
+    </div>
+  </div>
+
+  <script>
+  'use strict';
+
+  /* ── UTILS ── */
+  const U = {
+    formatQ(n) {
+      if (!n && n !== 0) return 'Q —';
+      return 'Q ' + Number(n).toLocaleString('es-GT',{minimumFractionDigits:2,maximumFractionDigits:2});
+    },
+    parseNum(v) { const n = parseFloat(v); return isNaN(n)||n<0?0:n; },
+    formatDT(str) {
+      if (!str) return '—';
+      const d = new Date(str);
+      const p = n => String(n).padStart(2,'0');
+      const m = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      return `${p(d.getDate())}/${m[d.getMonth()]}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+    },
+    formatDate(str) {
+      if (!str) return '—';
+      const [y,m,d] = str.split('-');
+      const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${y}`;
+    },
+    addDays(str, days) {
+      if (!str||!days) return null;
+      const d = new Date(str+'T12:00:00');
+      d.setDate(d.getDate()+parseInt(days));
+      return d.toISOString().slice(0,10);
+    },
+  };
+
+  /* ── TOAST ── */
+  const Toast = {
+    show(title,msg,type='info',dur=3600) {
+      const c = document.getElementById('toastContainer');
+      const icons = {success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.innerHTML = `
+        <span class="t-icon">${icons[type]}</span>
+        <div><div class="t-title">${title}</div>${msg?`<div class="t-msg">${msg}</div>`:''}</div>
+        <button class="t-close" aria-label="Cerrar">×</button>
+      `;
+      t.querySelector('.t-close').addEventListener('click',()=>Toast.remove(t));
+      c.appendChild(t);
+      if (dur>0) setTimeout(()=>Toast.remove(t),dur);
+    },
+    remove(t) {
+      if (!t||t.classList.contains('removing')) return;
+      t.classList.add('removing');
+      setTimeout(()=>t.remove(),240);
+    },
+  };
+
+  /* ── CALCULAR ── */
+  function calcular(monto, dias, tasa) {
+    if (!monto||!dias||!tasa) return {interes:0,total:0};
+    const interes = Math.round(monto*(tasa/100)*(dias/365)*100)/100;
+    return { interes, total: Math.round((monto+interes)*100)/100 };
+  }
+
+  /* ── LEER FORM ── */
+  function getData() {
+    return {
+      noComprobante:   document.getElementById('noComprobante').value.trim(),
+      fechaHora:       document.getElementById('fechaHora').value,
+      agencia:         document.getElementById('agencia').value.trim(),
+      asesor:          document.getElementById('asesor').value.trim(),
+      infoSocio:       document.getElementById('infoSocio').value.trim(),
+      montoAhorro:     U.parseNum(document.getElementById('montoAhorro').value),
+      plazoDias:       U.parseNum(document.getElementById('plazoDias').value),
+      tasaPreferencia: U.parseNum(document.getElementById('tasaPreferencia').value),
+      fechaVencimiento:document.getElementById('fechaVencimiento').value,
+    };
+  }
+
+  /* ── AUTO FECHA VENCIMIENTO ── */
+  function autoVenc() {
+    const fh = document.getElementById('fechaHora').value;
+    const pd = U.parseNum(document.getElementById('plazoDias').value);
+    const fv = document.getElementById('fechaVencimiento');
+    if (fh && pd>0) {
+      const v = U.addDays(fh.slice(0,10), pd);
+      if (v) fv.value = v;
+    } else { fv.value = ''; }
+  }
+
+  /* ── UPDATE PREVIEW ── */
+  function updatePreview() {
+    autoVenc();
+    const d = getData();
+    const {interes, total} = calcular(d.montoAhorro, d.plazoDias, d.tasaPreferencia);
+
+    const hasData = d.noComprobante||d.infoSocio||d.montoAhorro>0||d.agencia||d.asesor;
+    const comp = document.getElementById('comprobante');
+    const ph   = document.getElementById('ph');
+    if (hasData) { comp.classList.add('visible'); ph.style.display='none'; }
+    else         { comp.classList.remove('visible'); ph.style.display=''; }
+
+    const set = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+
+    set('pv-noComp',   d.noComprobante  || '—');
+    set('pv-noComp2',  d.noComprobante  || '—');
+    set('pv-fecha',    d.fechaHora ? U.formatDT(d.fechaHora) : '—');
+    set('pv-agencia',  d.agencia   || '—');
+    set('pv-asesor',   d.asesor    || '—');
+    set('pv-socio',    d.infoSocio || '—');
+    set('pv-monto',    d.montoAhorro>0  ? U.formatQ(d.montoAhorro)  : 'Q —');
+    set('pv-plazo',    d.plazoDias>0    ? `${d.plazoDias} días`      : '—');
+    set('pv-tasa',     d.tasaPreferencia>0 ? `${d.tasaPreferencia}% anual` : '—');
+    set('pv-venc',     d.fechaVencimiento ? U.formatDate(d.fechaVencimiento) : '—');
+    set('pv-interes',  interes>0 ? U.formatQ(interes) : 'Q —');
+    set('pv-total',    total>0   ? U.formatQ(total)   : 'Q —');
+
+    document.getElementById('calcInteres').textContent = U.formatQ(interes);
+    document.getElementById('calcTotal').textContent   = U.formatQ(total);
+  }
+
+  /* ── VALIDATE ── */
+  function validate() {
+    const d = getData();
+    const reqs = [
+      {id:'noComprobante',   val:d.noComprobante,          lbl:'No. de comprobante'},
+      {id:'fechaHora',       val:d.fechaHora,              lbl:'Fecha y hora'},
+      {id:'agencia',         val:d.agencia,                lbl:'Agencia'},
+      {id:'asesor',          val:d.asesor,                 lbl:'Asesor'},
+      {id:'infoSocio',       val:d.infoSocio,              lbl:'Información del socio'},
+      {id:'tasaPreferencia', val:d.tasaPreferencia>0?'ok':'', lbl:'Tasa Preferencia'},
+    ];
+    const errors = [];
+    reqs.forEach(r => {
+      const el = document.getElementById(r.id);
+      if (!r.val) { errors.push(r.lbl); el?.classList.add('is-invalid'); el?.classList.remove('is-valid'); }
+      else { el?.classList.remove('is-invalid'); el?.classList.add('is-valid'); }
+    });
+    ['montoAhorro','plazoDias'].forEach(id => {
+      const v = U.parseNum(document.getElementById(id).value);
+      if (v<=0) { errors.push(id==='montoAhorro'?'Monto':'Plazo'); document.getElementById(id).classList.add('is-invalid'); }
+      else { document.getElementById(id).classList.remove('is-invalid'); document.getElementById(id).classList.add('is-valid'); }
+    });
+    return errors;
+  }
+
+  /* ── GENERAR PDF ── */
+  async function generarPDF() {
+    const errs = validate();
+    if (errs.length>0) {
+      Toast.show('Campos requeridos', errs.slice(0,3).join(', '), 'warning');
+      document.querySelector('.is-invalid')?.scrollIntoView({behavior:'smooth',block:'center'});
+      return;
+    }
+
+    const overlay  = document.getElementById('processingOverlay');
+    const statusEl = document.getElementById('procStatus');
+    const barEl    = document.getElementById('procBarFill');
+    const sp = (msg,pct) => { statusEl.textContent=msg; barEl.style.width=pct+'%'; };
+
+    try {
+      overlay.classList.add('active');
+      sp('Capturando comprobante...', 15);
+
+      const comp = document.getElementById('comprobante');
+      comp.classList.add('visible');
+      await new Promise(r => setTimeout(r, 350));
+
+      sp('Renderizando imagen...', 38);
+
+      const canvas = await html2canvas(comp, {
+        scale: 2.8,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        removeContainer: true,
+      });
+
+      sp('Convirtiendo a PDF...', 65);
+      await new Promise(r => setTimeout(r, 180));
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.97);
+      const {jsPDF} = window.jspdf;
+      const pdf = new jsPDF({orientation:'portrait', unit:'pt', format:'letter'});
+      const pW=612, pH=792;
+      const aspect = canvas.width/canvas.height;
+      const pA = pW/pH;
+      let dW,dH,oX=0,oY=0;
+      if (aspect>pA) { dW=pW; dH=pW/aspect; oY=(pH-dH)/2; }
+      else           { dH=pH; dW=pH*aspect;  oX=(pW-dW)/2; }
+
+      pdf.addImage(imgData,'JPEG',oX,oY,dW,dH,'','FAST');
+      sp('Preparando descarga...', 90);
+      await new Promise(r => setTimeout(r, 200));
+      sp('¡Listo!', 100);
+      await new Promise(r => setTimeout(r, 320));
+
+      const d = getData();
+      const n = (d.infoSocio||'Socio').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+      const c = (d.noComprobante||'CPF').replace(/[^a-zA-Z0-9-]/g,'');
+      pdf.save(`Comprobante_PlazoFijo_${n}_${c}.pdf`);
+
+      Toast.show('PDF generado', `Comprobante de ${d.infoSocio||'socio'} descargado`, 'success');
+
+    } catch(err) {
+      console.error(err);
+      Toast.show('Error al generar PDF', err.message||'Intente de nuevo', 'error');
+    } finally {
+      setTimeout(()=>overlay.classList.remove('active'), 480);
+    }
+  }
+
+  /* ── LIMPIAR ── */
+  function limpiar() {
+    if (!confirm('¿Desea limpiar todos los campos?')) return;
+    document.getElementById('comprobanteForm').reset();
+    document.querySelectorAll('.field-input').forEach(el=>el.classList.remove('is-valid','is-invalid'));
+    document.getElementById('calcInteres').textContent='Q 0.00';
+    document.getElementById('calcTotal').textContent='Q 0.00';
+    document.getElementById('comprobante').classList.remove('visible');
+    document.getElementById('ph').style.display='';
+    // Re-set fecha/hora actual
+    const now=new Date(), p=n=>String(n).padStart(2,'0');
+    document.getElementById('fechaHora').value=`${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())}T${p(now.getHours())}:${p(now.getMinutes())}`;
+    Toast.show('Formulario limpiado','','info',2000);
+  }
+
+  /* ── INIT ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    // Fecha/hora actual
+    const now=new Date(), p=n=>String(n).padStart(2,'0');
+    document.getElementById('fechaHora').value=`${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())}T${p(now.getHours())}:${p(now.getMinutes())}`;
+
+    // Escuchar cambios
+    document.getElementById('comprobanteForm').querySelectorAll('input').forEach(el => {
+      el.addEventListener('input',  updatePreview);
+      el.addEventListener('change', updatePreview);
+    });
+
+    // Botones
+    document.getElementById('btnGenerar').addEventListener('click', generarPDF);
+    document.getElementById('btnLimpiar').addEventListener('click', limpiar);
+
+    updatePreview();
+    Toast.show('CoopeExpress listo','Complete los datos para generar el comprobante','info',3500);
+  });
+  </script>
+</body>
+</html>
