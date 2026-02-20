@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es" dir="ltr">
 <head>
@@ -16,8 +17,8 @@
 
   <style>
     :root {
-      --verde:    #8cc63f;
-      --verde-d:  #6aa32a;
+      --verde:    #D2DD56;
+      --verde-d:  #b8c43a;
       --gris-osc: #3d4245;
       --gris-med: #6b7280;
       --gris-cla: #f3f4f5;
@@ -68,7 +69,7 @@
     }
     .topbar-badge {
       background: var(--verde);
-      color: var(--blanco);
+      color: var(--gris-osc);
       font-family: var(--font-d);
       font-size: .72rem;
       font-weight: 700;
@@ -113,7 +114,7 @@
       font-weight: 700;
       letter-spacing: .05em;
       text-transform: uppercase;
-      color: var(--blanco);
+      color: var(--gris-osc);
     }
     .form-body { padding: 1.35rem; }
 
@@ -270,17 +271,13 @@
       text-align: center;
       border-bottom: 3px solid var(--verde);
     }
-    .c-logo {
-      font-family: var(--font-d);
-      font-size: 1.9rem;
-      font-weight: 800;
-      letter-spacing: -.01em;
-      line-height: 1;
-      margin-bottom: .12rem;
+    .c-logo-img {
+      width: 180px;
+      height: auto;
+      display: block;
+      margin: 0 auto .5rem;
+      object-fit: contain;
     }
-    .c-logo .coop { color:var(--gris-osc); }
-    .c-logo .expr { color:var(--verde); }
-    .c-slogan { font-size:.6rem; font-style:italic; color:var(--gris-med); margin-bottom:.5rem; }
     .c-mision {
       font-size: .57rem;
       font-weight: 600;
@@ -299,13 +296,13 @@
     }
     .c-banda-num {
       padding: .55rem .9rem;
-      border-right: 2px solid rgba(255,255,255,.3);
+      border-right: 2px solid rgba(0,0,0,.15);
     }
-    .c-banda-num .bl { font-size:.53rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.78); }
-    .c-banda-num .bv { font-family:var(--font-d); font-size:.9rem; font-weight:700; color:var(--blanco); min-height:1.1em; }
+    .c-banda-num .bl { font-size:.53rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:rgba(0,0,0,.55); }
+    .c-banda-num .bv { font-family:var(--font-d); font-size:.9rem; font-weight:700; color:var(--gris-osc); min-height:1.1em; }
     .c-banda-tit { padding:.55rem .9rem; text-align:center; }
-    .c-banda-tit .bl { font-size:.55rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.8); }
-    .c-banda-tit .bv { font-family:var(--font-d); font-size:1.3rem; font-weight:800; letter-spacing:.02em; color:var(--blanco); line-height:1; }
+    .c-banda-tit .bl { font-size:.55rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:rgba(0,0,0,.55); }
+    .c-banda-tit .bv { font-family:var(--font-d); font-size:1.3rem; font-weight:800; letter-spacing:.02em; color:var(--gris-osc); line-height:1; }
 
     /* Cuerpo */
     .c-body { padding: .8rem 1.1rem; }
@@ -455,8 +452,7 @@
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-brand">
-      <div class="topbar-logo"><span class="coop">COOP</span><span class="expr">EXPRESS</span></div>
-      <div class="topbar-tagline">¡Cambiando vidas, un paso a la vez!</div>
+      <img src="https://live.staticflickr.com/65535/55105453377_b2908c23a2_b.jpg" alt="COOPEXPRESS" style="height:32px;width:auto;display:block;" crossorigin="anonymous" />
     </div>
     <div class="topbar-badge">Comprobante Plazo Fijo</div>
   </header>
@@ -482,7 +478,7 @@
             </div>
             <div class="field-group">
               <label class="field-label" for="fechaHora">Fecha y Hora <span class="req">*</span></label>
-              <input class="field-input" type="datetime-local" id="fechaHora" />
+              <input class="field-input" type="text" id="fechaHora" placeholder="Haga clic para registrar fecha y hora" readonly style="cursor:pointer;" />
             </div>
             <div class="field-group">
               <label class="field-label" for="agencia">Agencia <span class="req">*</span></label>
@@ -513,8 +509,13 @@
               <input class="field-input" type="number" id="montoAhorro" placeholder="0.00" min="0" step="0.01" />
             </div>
             <div class="field-group">
-              <label class="field-label" for="plazoDias">Plazo Contratado (días) <span class="req">*</span></label>
-              <input class="field-input" type="number" id="plazoDias" placeholder="Ej: 360" min="1" step="1" />
+              <label class="field-label" for="plazoDias">Plazo Contratado <span class="req">*</span></label>
+              <select class="field-input" id="plazoDias">
+                <option value="">Seleccionar plazo...</option>
+                <option value="180">6 meses</option>
+                <option value="365">1 año</option>
+                <option value="730">2 años</option>
+              </select>
             </div>
             <div class="field-group">
               <label class="field-label" for="tasaPreferencia">Tasa Preferencia (% anual) <span class="req">*</span></label>
@@ -569,8 +570,7 @@
           <div id="comprobante">
             <!-- Encabezado -->
             <div class="c-top">
-              <div class="c-logo"><span class="coop">COOP</span><span class="expr">EXPRESS</span></div>
-              <div class="c-slogan">¡Cambiando vidas, un paso a la vez!</div>
+              <img src="https://live.staticflickr.com/65535/55105453377_b2908c23a2_b.jpg" alt="COOPEXPRESS" class="c-logo-img" crossorigin="anonymous" />
               <div class="c-mision">Guatemaltecos ayudando a guatemaltecos<br />que ahorran y sueñan con propósito</div>
             </div>
 
@@ -650,7 +650,7 @@
               <!-- Pie -->
               <div class="c-foot">
                 <div class="c-foot-txt">Este comprobante respalda la apertura de su ahorro a plazo fijo con</div>
-                <div class="c-foot-logo"><span class="coop">COOP</span><span class="expr">EXPRESS</span></div>
+                <img src="https://live.staticflickr.com/65535/55105453377_b2908c23a2_b.jpg" alt="COOPEXPRESS" style="width:110px;height:auto;display:block;margin:.3rem auto;" crossorigin="anonymous" />
                 <div class="c-foot-contact">Para cualquier consulta puede visitar nuestras agencias<br />o escribirnos a nuestro WhatsApp oficial</div>
               </div>
             </div>
@@ -763,6 +763,7 @@
       infoSocio:       document.getElementById('infoSocio').value.trim(),
       montoAhorro:     U.parseNum(document.getElementById('montoAhorro').value),
       plazoDias:       U.parseNum(document.getElementById('plazoDias').value),
+      plazoLabel:      document.getElementById('plazoDias').options[document.getElementById('plazoDias').selectedIndex]?.text || '—',
       tasaPreferencia: U.parseNum(document.getElementById('tasaPreferencia').value),
       fechaVencimiento:document.getElementById('fechaVencimiento').value,
     };
@@ -770,11 +771,12 @@
 
   /* ── AUTO FECHA VENCIMIENTO ── */
   function autoVenc() {
-    const fh = document.getElementById('fechaHora').value;
-    const pd = U.parseNum(document.getElementById('plazoDias').value);
-    const fv = document.getElementById('fechaVencimiento');
-    if (fh && pd>0) {
-      const v = U.addDays(fh.slice(0,10), pd);
+    const fhEl = document.getElementById('fechaHora');
+    const pd   = U.parseNum(document.getElementById('plazoDias').value);
+    const fv   = document.getElementById('fechaVencimiento');
+    const base = fhEl._isoBase || null;
+    if (base && pd > 0) {
+      const v = U.addDays(base, pd);
       if (v) fv.value = v;
     } else { fv.value = ''; }
   }
@@ -795,12 +797,12 @@
 
     set('pv-noComp',   d.noComprobante  || '—');
     set('pv-noComp2',  d.noComprobante  || '—');
-    set('pv-fecha',    d.fechaHora ? U.formatDT(d.fechaHora) : '—');
+    set('pv-fecha',    d.fechaHora || '—');
     set('pv-agencia',  d.agencia   || '—');
     set('pv-asesor',   d.asesor    || '—');
     set('pv-socio',    d.infoSocio || '—');
     set('pv-monto',    d.montoAhorro>0  ? U.formatQ(d.montoAhorro)  : 'Q —');
-    set('pv-plazo',    d.plazoDias>0    ? `${d.plazoDias} días`      : '—');
+    set('pv-plazo',    d.plazoDias>0 ? d.plazoLabel : '—');
     set('pv-tasa',     d.tasaPreferencia>0 ? `${d.tasaPreferencia}% anual` : '—');
     set('pv-venc',     d.fechaVencimiento ? U.formatDate(d.fechaVencimiento) : '—');
     set('pv-interes',  interes>0 ? U.formatQ(interes) : 'Q —');
@@ -810,7 +812,18 @@
     document.getElementById('calcTotal').textContent   = U.formatQ(total);
   }
 
-  /* ── VALIDATE ── */
+  function stampFecha() {
+    const now = new Date();
+    const p = n => String(n).padStart(2,'0');
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const display = `${p(now.getDate())} de ${meses[now.getMonth()]} de ${now.getFullYear()}  ${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`;
+    const el = document.getElementById('fechaHora');
+    el.value = display;
+    el._isoBase = `${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())}`;
+    el.classList.add('is-valid');
+    el.classList.remove('is-invalid');
+    updatePreview();
+  }
   function validate() {
     const d = getData();
     const reqs = [
@@ -827,11 +840,14 @@
       if (!r.val) { errors.push(r.lbl); el?.classList.add('is-invalid'); el?.classList.remove('is-valid'); }
       else { el?.classList.remove('is-invalid'); el?.classList.add('is-valid'); }
     });
-    ['montoAhorro','plazoDias'].forEach(id => {
+    ['montoAhorro'].forEach(id => {
       const v = U.parseNum(document.getElementById(id).value);
-      if (v<=0) { errors.push(id==='montoAhorro'?'Monto':'Plazo'); document.getElementById(id).classList.add('is-invalid'); }
+      if (v<=0) { errors.push('Monto del ahorro'); document.getElementById(id).classList.add('is-invalid'); }
       else { document.getElementById(id).classList.remove('is-invalid'); document.getElementById(id).classList.add('is-valid'); }
     });
+    const plazoEl = document.getElementById('plazoDias');
+    if (!plazoEl.value) { errors.push('Plazo contratado'); plazoEl.classList.add('is-invalid'); }
+    else { plazoEl.classList.remove('is-invalid'); plazoEl.classList.add('is-valid'); }
     return errors;
   }
 
@@ -872,15 +888,12 @@
 
       const imgData = canvas.toDataURL('image/jpeg', 0.97);
       const {jsPDF} = window.jspdf;
-      const pdf = new jsPDF({orientation:'portrait', unit:'pt', format:'letter'});
-      const pW=612, pH=792;
-      const aspect = canvas.width/canvas.height;
-      const pA = pW/pH;
-      let dW,dH,oX=0,oY=0;
-      if (aspect>pA) { dW=pW; dH=pW/aspect; oY=(pH-dH)/2; }
-      else           { dH=pH; dW=pH*aspect;  oX=(pW-dW)/2; }
-
-      pdf.addImage(imgData,'JPEG',oX,oY,dW,dH,'','FAST');
+      // Tamaño recibo bancario: 80mm de ancho, alto proporcional al contenido
+      const mmW = 80;
+      const aspect = canvas.width / canvas.height;
+      const mmH = mmW / aspect;
+      const pdf = new jsPDF({orientation:'portrait', unit:'mm', format:[mmW, mmH]});
+      pdf.addImage(imgData,'JPEG', 0, 0, mmW, mmH, '', 'FAST');
       sp('Preparando descarga...', 90);
       await new Promise(r => setTimeout(r, 200));
       sp('¡Listo!', 100);
@@ -905,35 +918,34 @@
   function limpiar() {
     if (!confirm('¿Desea limpiar todos los campos?')) return;
     document.getElementById('comprobanteForm').reset();
+    const fhEl = document.getElementById('fechaHora');
+    fhEl.value = '';
+    fhEl._isoBase = null;
     document.querySelectorAll('.field-input').forEach(el=>el.classList.remove('is-valid','is-invalid'));
     document.getElementById('calcInteres').textContent='Q 0.00';
     document.getElementById('calcTotal').textContent='Q 0.00';
     document.getElementById('comprobante').classList.remove('visible');
     document.getElementById('ph').style.display='';
-    // Re-set fecha/hora actual
-    const now=new Date(), p=n=>String(n).padStart(2,'0');
-    document.getElementById('fechaHora').value=`${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())}T${p(now.getHours())}:${p(now.getMinutes())}`;
     Toast.show('Formulario limpiado','','info',2000);
   }
 
   /* ── INIT ── */
   document.addEventListener('DOMContentLoaded', () => {
-    // Fecha/hora actual
-    const now=new Date(), p=n=>String(n).padStart(2,'0');
-    document.getElementById('fechaHora').value=`${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())}T${p(now.getHours())}:${p(now.getMinutes())}`;
+    // Click en fecha/hora → stamp automático
+    document.getElementById('fechaHora').addEventListener('click', stampFecha);
 
-    // Escuchar cambios
-    document.getElementById('comprobanteForm').querySelectorAll('input').forEach(el => {
+    // Escuchar cambios en otros campos
+    document.getElementById('comprobanteForm').querySelectorAll('input, select').forEach(el => {
+      if (el.id === 'fechaHora') return; // manejado por click
       el.addEventListener('input',  updatePreview);
       el.addEventListener('change', updatePreview);
     });
 
-    // Botones
     document.getElementById('btnGenerar').addEventListener('click', generarPDF);
     document.getElementById('btnLimpiar').addEventListener('click', limpiar);
 
     updatePreview();
-    Toast.show('CoopeExpress listo','Complete los datos para generar el comprobante','info',3500);
+    Toast.show('CoopeExpress listo','Haga clic en "Fecha y Hora" para registrar el momento actual','info',4000);
   });
   </script>
 </body>
